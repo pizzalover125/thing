@@ -1,2 +1,2 @@
 # thing
-A car thing clone,
+A car thing clone.
