@@ -7,4 +7,7 @@ I saw Ducc's ESP32 Car Thing clone while on YouTube, so I wanted to make my own!
 So I'll design a better solution tomorrow :).
 
 5/28
-Okay so I basically just designed the new, smaller PCB. It looks ok I guess. Idk what to say as that's pretty much all I did. I also deisgned the case using a similar style to Hackpad.
+Okay so I basically just designed the new, smaller PCB. People also liked it in the Slack. It looks ok I guess. Idk what to say as that's pretty much all I did. I also deisgned the case using a similar style to Hackpad.
+
+5/29
+Today, I built the firmware. I don't really know how to make firmware without the hardware at hand... so I just adjusted @Ducc's firmware. Turns out we used a different MCU and different display chip. I modified the code to work with my variant. I also added support for volume up and volume down. When I get the PCB and stuff, I'll actually make custom firmware that shows the album art and everything. 
