@@ -5,3 +5,6 @@ I saw Ducc's ESP32 Car Thing clone while on YouTube, so I wanted to make my own!
 ![image](https://github.com/user-attachments/assets/028a0d33-64fe-456f-8b76-309765d96c50)
 
 So I'll design a better solution tomorrow :).
+
+5/28
+Okay so I basically just designed the new, smaller PCB. It looks ok I guess. Idk what to say as that's pretty much all I did. I also deisgned the case using a similar style to Hackpad.
