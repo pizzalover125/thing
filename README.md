@@ -8,4 +8,7 @@ A spotify car thing clone.
 ![alt text](image-3.png)
 
 ## BOM
-
+1x Adafruit 2" Display - $26.83
+1x PCBWay PCB - $14.39
+5x Buttons - FREE (got them for cardPad)
+1x Seeed Studio XIAO ESP32C3 - $11.22
