@@ -5,7 +5,7 @@ A spotify car thing clone.
 ![alt text](image.png)
 ![alt text](image-1.png)
 ![alt text](image-2.png)
-![alt text](image-3.png)
+![image](https://github.com/user-attachments/assets/e0b82474-8446-4cfa-85a9-75ff8cab1c90)
 ![image](https://github.com/user-attachments/assets/11dddae1-8d14-4491-b4ba-ee506a0075d2)
 
 
