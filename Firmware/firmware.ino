@@ -1,3 +1,4 @@
+// most code written in Ducc's Car Thing Clone 
 #include <ArduinoJson.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
