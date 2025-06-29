@@ -1,5 +1,5 @@
 # thing
-A spotify car thing clone.
+A spotify car thing clone. If you aren't aware, Spotify recent discontinued their Car Thing. On YouTube, I spotted this video of @Ducc displaying his Car Thing Clone. I absolutely loved it, so I wanted to make my own! I added a bigger screen and a fast microcontroller to be able to display album art in the future. However, I also used cheap switches to lower the costs.
 
 ## images
 ![alt text](image.png)
