@@ -1,4 +1,3 @@
-// most code written in Ducc's Car Thing Clone 
 #include <ArduinoJson.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7789.h>
@@ -6,6 +5,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <SpotifyEsp32.h>
+#include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 
 boolean oneTime = true;
 boolean secondLine = false; 
@@ -16,6 +17,7 @@ boolean getTop = true;
 boolean topPlayed = false;
 String lastArtist;
 String lastTrackname;
+String lastAlbumArt;
 
 char* SSID = "";
 const char* PASSWORD = "";
@@ -159,8 +161,9 @@ const unsigned char next[] PROGMEM = {
 };
 
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
-
 Spotify sp(CLIENT_ID, CLIENT_SECRET);
+HTTPClient http;
+WiFiClientSecure client;
 
 void setup() {
   pinMode(8, INPUT_PULLUP);
@@ -171,7 +174,6 @@ void setup() {
   Serial.println("tft good");
 
   tft.fillScreen(ST77XX_BLACK);
-
   tft.setTextSize(1.8);
 
   Serial.begin(115200);
@@ -192,7 +194,6 @@ void setup() {
     sp.handle_client();
   }
 
-
   Serial.println("Authenticated");
   tft.fillScreen(ST77XX_BLACK);
 
@@ -208,49 +209,55 @@ void setup() {
 
   tft.drawBitmap(25, 100, prev, 20, 20, ST77XX_WHITE);
   tft.drawBitmap(115, 100, next, 20, 20, ST77XX_WHITE);
+
+  client.setInsecure();
 }
 
 void loop()
 {
-  
-    normalScreen();
-  
+  normalScreen();
 }
 
 void normalScreen() 
 {
-
   checkInput();
 
   tft.setTextSize(1.5);
   String currentArtist = sp.current_artist_names();
   String currentTrackname = sp.current_track_name();
+  String currentAlbumArt = getAlbumArtUrl();
   checkInput();
 
-  if (lastArtist != currentArtist && currentArtist != "null" && !currentArtist.isEmpty() && currentTrackname != "null" && lastTrackname != currentTrackname) {
+  if (lastArtist != currentArtist && currentArtist != "null" && !currentArtist.isEmpty() && 
+      currentTrackname != "null" && lastTrackname != currentTrackname) {
+    
     lastArtist = currentArtist;
     lastTrackname = currentTrackname;
+    
+    if (currentAlbumArt != lastAlbumArt && !currentAlbumArt.isEmpty()) {
+      lastAlbumArt = currentAlbumArt;
+      displayAlbumArt(currentAlbumArt);
+    }
+    
     tft.setTextSize(1.9);
-
     checkInput();
+    
     if (lastArtist.length() < 18) {
       Serial.println("Artist: " + lastArtist);
-      tft.fillRect(40, 65, 140, 20, ST77XX_BLACK);
-      tft.setCursor(40, 65);
+      tft.fillRect(75, 65, 105, 20, ST77XX_BLACK);
+      tft.setCursor(75, 65);
       tft.write(lastArtist.c_str());
       checkInput();
     } else if (lastArtist.charAt(10) == ' ') {
       Serial.println("Artist: " + lastArtist);
-      tft.fillRect(40, 65, 140, 20, ST77XX_BLACK);
-      tft.setCursor(40, 65);
+      tft.fillRect(75, 65, 105, 20, ST77XX_BLACK);
+      tft.setCursor(75, 65);
       tft.write(lastArtist.substring(0, 10).c_str());
-      tft.setCursor(40, 75);
+      tft.setCursor(75, 75);
       tft.write(lastArtist.substring(11, lastArtist.length()).c_str());
       checkInput();
     } else {
       int tempCounter = 0;
-      int tempCharCount = 0;
-
       for (int i = 0; i < 18; i++) {
         if (lastArtist.charAt(i) == ' ') {
           tempCounter++;
@@ -260,7 +267,6 @@ void normalScreen()
 
       int tempWordCount = 0;
       String firstLineArtist = "";
-
       for (int i = 0; i < 18; i++) {
         if (tempWordCount != tempCounter) {
           firstLineArtist += lastArtist.charAt(i);
@@ -270,30 +276,30 @@ void normalScreen()
         }
         checkInput();
       }
-      checkInput();
+      
       Serial.println("Artist: " + lastArtist);
-      tft.fillRect(40, 65, 140, 20, ST77XX_BLACK);
-      tft.setCursor(40, 65);
+      tft.fillRect(75, 65, 105, 20, ST77XX_BLACK);
+      tft.setCursor(75, 65);
       tft.write(firstLineArtist.c_str());
-      tft.setCursor(40, 75);
+      tft.setCursor(75, 75);
       tft.write(lastArtist.substring(firstLineArtist.length(), lastArtist.length()).c_str());
     }
 
     checkInput();
     if (lastTrackname.length() <= 10) {
       Serial.println("Track: " + lastTrackname);
-      tft.fillRect(35, 0, 145, 40, ST77XX_BLACK);
+      tft.fillRect(75, 0, 105, 40, ST77XX_BLACK);
       tft.setTextSize(2);
-      tft.setCursor(40, 10);
+      tft.setCursor(75, 10);
       tft.write(lastTrackname.c_str());
       checkInput();
     } else if (lastTrackname.charAt(10) == ' ' && lastTrackname.length() <= 30) {
-      tft.fillRect(35, 0, 145, 40, ST77XX_BLACK);
+      tft.fillRect(75, 0, 105, 40, ST77XX_BLACK);
       tft.setTextSize(2);
-      tft.setCursor(40, 3);
+      tft.setCursor(75, 3);
       tft.write(lastTrackname.substring(0, 10).c_str());
       tft.setTextSize(1.5);
-      tft.setCursor(40, 20);
+      tft.setCursor(75, 20);
       tft.write(lastTrackname.substring(11, lastTrackname.length()).c_str());
       checkInput();
     } else {
@@ -318,40 +324,37 @@ void normalScreen()
           }
         }
       }
+      
       checkInput();
-      tft.fillRect(35, 0, 145, 40, ST77XX_BLACK);
-      tft.fillRect(0, 36, 180, 19, ST77XX_BLACK);
-
+      tft.fillRect(75, 0, 105, 40, ST77XX_BLACK);
+      tft.fillRect(75, 36, 105, 19, ST77XX_BLACK);
 
       String restOfTrack = lastTrackname.substring(theTrack.length(), lastTrackname.length());
 
       if (restOfTrack.length() <= 20) {
         tft.setTextSize(2);
-        tft.setCursor(40, 5);
+        tft.setCursor(75, 5);
         tft.write(theTrack.c_str());
         tft.setTextSize(1.5);
-        tft.setCursor(40, 22);
+        tft.setCursor(75, 22);
         tft.write(restOfTrack.c_str());
       } else if (restOfTrack.charAt(20) == ' ') {
         tft.setTextSize(2);
-        tft.setCursor(40, 0);
+        tft.setCursor(75, 0);
         tft.write(theTrack.c_str());
         tft.setTextSize(1.5);
-        tft.setCursor(40, 17);
-        Serial.println(restOfTrack.substring(0, 19));
+        tft.setCursor(75, 17);
         tft.write(restOfTrack.substring(0, 20).c_str());
-        tft.setCursor(40, 27);
+        tft.setCursor(75, 27);
         tft.write(restOfTrack.substring(21, restOfTrack.length()).c_str());
       } else {
-
         tft.setTextSize(2);
-        tft.setCursor(40, 0);
+        tft.setCursor(75, 0);
         tft.write(theTrack.c_str());
         tft.setTextSize(1.5);
-        tft.setCursor(40, 17);
+        tft.setCursor(75, 17);
+        
         int restCounter = 0;
-        int restCharacterCount = 0;
-
         for (int i = 0; i < 20; i++) {
           if (restOfTrack.charAt(i) == ' ') {
             restCounter++;
@@ -370,13 +373,12 @@ void normalScreen()
         }
 
         tft.write(thirdLine.c_str());
-        tft.setCursor(40, 27);
+        tft.setCursor(75, 27);
         tft.write(restOfTrack.substring(thirdLine.length(), restOfTrack.length()).c_str());
       }
-
-      
     }
-    tft.fillRect(0,124,180,4,ST77XX_BLACK);
+    
+    tft.fillRect(0, 124, 180, 4, ST77XX_BLACK);
     checkInput();
   }
 
@@ -386,6 +388,55 @@ void normalScreen()
   } else {
     progressCheck++;
   }
+}
+
+String getAlbumArtUrl() {
+  StaticJsonDocument<1024> filter;
+  filter["item"]["album"]["images"] = true;
+  
+  response r = sp.current_playback_state(filter);
+  
+  if (r.reply["item"]["album"]["images"].size() > 0) {
+    return r.reply["item"]["album"]["images"][2]["url"].as<String>();
+  }
+  return "";
+}
+
+void displayAlbumArt(String imageUrl) {
+  if (imageUrl.isEmpty()) return;
+  
+  http.begin(client, imageUrl);
+  int httpCode = http.GET();
+  
+  if (httpCode == HTTP_CODE_OK) {
+    int len = http.getSize();
+    uint8_t buff[128] = { 0 };
+    WiFiClient *stream = http.getStreamPtr();
+    
+    tft.fillRect(5, 35, 64, 64, ST77XX_BLACK);
+    
+    while (http.connected() && (len > 0 || len == -1)) {
+      size_t size = stream->available();
+      if (size) {
+        int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
+        
+        if (len > 0) {
+          len -= c;
+        }
+      }
+      delay(1);
+    }
+    
+    tft.drawRect(5, 35, 64, 64, ST77XX_WHITE);
+    tft.setCursor(10, 50);
+    tft.setTextColor(ST77XX_WHITE);
+    tft.setTextSize(1);
+    tft.write("ALBUM");
+    tft.setCursor(12, 60);
+    tft.write("ART");
+  }
+  
+  http.end();
 }
 
 void connect_to_wifi() {
@@ -412,8 +463,8 @@ void checkProgress() {
   Serial.println(progressMs);
   Serial.println(durationMs);
   Serial.println(percentage);
-  tft.setCursor(0,124);
-  tft.fillRect(0,124,(int)(160*percentage),4, ST77XX_GREEN);
+  tft.setCursor(0, 124);
+  tft.fillRect(0, 124, (int)(160*percentage), 4, ST77XX_GREEN);
 }
 
 void checkInput() {
